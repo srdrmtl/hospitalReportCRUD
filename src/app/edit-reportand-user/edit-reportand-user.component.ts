@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ReportsService } from '../reports.service';
-import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
-  selector: 'app-add-user',
-  templateUrl: './add-user.component.html',
-  styleUrls: ['./add-user.component.scss']
+  selector: 'app-edit-reportand-user',
+  templateUrl: './edit-reportand-user.component.html',
+  styleUrls: ['./edit-reportand-user.component.scss']
 })
-export class AddUserComponent implements OnInit {
+export class EditReportandUserComponent implements OnInit {
   name: any;
   tcNo: any;
   blood: any;
@@ -18,18 +17,22 @@ export class AddUserComponent implements OnInit {
   selectedFileTwo: File;
   selectedFileThree: File;
   reportDetail: any = {};
+  userDetail: any = {};
   addUserSection: boolean;
   imageArr: any;
   editImage: any = { one: '', two: '', three: '' };
   showReport = false;
   userDate: any;
+  reportList: any = [];
   constructor(private dataService: ReportsService,
-    private http: HttpClient,
-    private router: Router) { }
+    private router: Router,
+    private route: ActivatedRoute) { }
 
   ngOnInit() {
     this.dataService.getToken();
-
+    this.fileId = +this.route.snapshot.paramMap.get('id');
+    this.getUser();
+    this.getReport();
   }
   showUser() {
     this.addUserSection = !this.addUserSection;
@@ -124,7 +127,61 @@ export class AddUserComponent implements OnInit {
     } else {
       this.addReport('');
     }
-
   }
 
+  getReport() {
+    this.dataService.getReportWithFileId(this.fileId).then((data: any) => {
+      console.log(data);
+      this.reportDetail.raporId = data.raporId;
+      this.reportDetail.fileNo = this.fileId;
+      this.reportDetail.reporter = data.raporEden;
+      this.reportDetail.bazoErit = data.bazofilikErit;
+      this.reportDetail.bazoSeri = data.bazofilikSeri;
+      this.reportDetail.comak = data.comak;
+      this.reportDetail.eozino = data.eozinofilikSeri;
+      this.reportDetail.lenfosit = data.lenfosit;
+      this.reportDetail.megakaryo = data.megakaryositler;
+      this.reportDetail.metam = data.metamyelosit;
+      this.reportDetail.monosit = data.monosit;
+      this.reportDetail.myelosit = data.myelosit;
+      this.reportDetail.myloblast = data.myloblast;
+      this.reportDetail.ortokro = data.ortokromantofilikErit;
+      this.reportDetail.parcali = data.parcali;
+      this.reportDetail.plazma = data.plazmaHucresi;
+      this.reportDetail.polikro = data.polikromalofilikErit;
+      this.reportDetail.proerit = data.proeritroblast;
+      this.reportDetail.promonosit = data.promonosit;
+      this.reportDetail.promyelosit = data.promyelosit;
+      this.reportDetail.sellul = data.sellulerite;
+      this.reportDetail.report = data.rapor;
+      this.reportDetail.tani = data.tani;
+      this.reportDetail.tarih = data.tarih;
+
+    });
+  }
+  getUser() {
+    this.dataService.getUserWithFileId(this.fileId).then((data: any) => {
+      this.userDetail.id = data.id;
+      this.userDetail.name = data.name;
+      this.userDetail.fileId = data.fileId;
+      this.userDetail.tcId = data.tcId;
+      this.userDetail.blood = data.blood;
+      this.userDetail.address = data.address;
+      this.userDetail.date = data.date;
+    });
+  }
+
+  updateData() {
+    this.dataService.updateUser(this.userDetail).then((data) => {
+      if (data != null) {
+        // tslint:disable-next-line:no-shadowed-variable
+        this.dataService.updateReport(this.reportDetail).then((data) => {
+          if (data != null) {
+            this.router.navigate(['/list']);
+          }
+        });
+      }
+    });
+
+  }
 }
